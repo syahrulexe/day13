@@ -74,22 +74,23 @@ func main() {
 }
 
 func home(c echo.Context) error {
-	data, _ := connection.Conn.Query(context.Background(), "SELECT id, name, start_date, end_date, description, technologies, image FROM tb_projects")
+	data, _ := connection.Conn.Query(context.Background(), "SELECT id, name, start_date, end_date,duration, description, technologies, html, css, javascript, java, image FROM tb_projects")
 
-	var dataProject []Project
+	var ress []Project
 	for data.Next() {
 		var each = Project{}
 
-		err := data.Scan(&each.Id, &each.ProjectName, &each.StartDate, &each.EndDate, &each.Description, &each.Technologies, &each.Image)
+		err := data.Scan(&each.Id, &each.ProjectName, &each.StartDate, &each.EndDate, &each.Duration, &each.Description, &each.Technologies, &each.Html, &each.Css, &each.Javascript, &each.Java, &each.Image)
 		if err != nil {
 			fmt.Println(err.Error())
 			return c.JSON(http.StatusInternalServerError, map[string]string{"Message": err.Error()})
 		}
-		dataProject = append(dataProject, each)
+		// each.Duration = getDuration(each.StartDate, each.EndDate)
+		ress = append(ress, each)
 	}
 
 	projects := map[string]interface{}{
-		"Projects": dataProject,
+		"Projects": ress,
 	}
 
 	var tmpl, err = template.ParseFiles("views/index.html")
@@ -173,7 +174,6 @@ func addProject(c echo.Context) error {
 	css := c.FormValue("input-check-css")
 	javascript := c.FormValue("input-check-javascript")
 	java := c.FormValue("input-check-java")
-	postingTime := time.Now()
 	// konversi value cekbox, string to boolean
 	htmlValue := html != ""
 	cssValue := css != ""
@@ -193,12 +193,11 @@ func addProject(c echo.Context) error {
 		Css:         cssValue,
 		Javascript:  javascriptValue,
 		Java:        javaValue,
-		postingTime: time.Now().String(),
 	}
 
 	dataProject = append(dataProject, newProject)
 
-	fmt.Println(projectName, "posted at :", postingTime)
+	fmt.Println(dataProject)
 
 	return c.Redirect(http.StatusMovedPermanently, "/")
 }
