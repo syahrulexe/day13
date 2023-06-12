@@ -60,7 +60,7 @@
                     <form action="/edit-project/{{.Project.Id}}"  method="POST">
                         <div class="mb-3">
                             <label class="form-label" for="input-project-name">Project Name</label>
-                            <input class="form-control shadow-sm" type="text" name="input-name" id="input-project-name"value="{{.Project.ProjectName}}"/>
+                            <input class="form-control shadow-sm" type="text" name="input-name" id="input-project-name"/>
                         </div>
                         <div class="mb-3 row g-2">
                             <div class="col">
@@ -86,21 +86,21 @@
                             <div class="d-flex mb-3">
                                 <div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-html" name="input-check-html" {{if .Project.Html}}checked{{end}}>
+                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-html" name="input-check-html">
                                         <label class="form-check-label" for="input-check-html">HTML</label>
                                       </div>
                                     <div class="">
-                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-css" name="input-check-css" {{if .Project.Css}}checked{{end}}>
+                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-css" name="input-check-css">
                                         <label class="form-check-label" for="input-check-css">CSS</label>
                                     </div>
                                 </div>   
                                 <div> 
                                     <div class="">
-                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-javascript" name="input-check-javascript" {{if .Project.Javascript}}checked{{end}}>
+                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-javascript" name="input-check-javascript">
                                         <label class="form-check-label" for="input-check-javascript">Java Script</label>
                                       </div>
                                     <div class="">
-                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-java" name="input-check-java"{{if .Project.Java}}checked{{end}}>
+                                        <input class="form-check-input shadow-sm" type="checkbox" id="input-check-java" name="input-check-java">
                                         <label class="form-check-label" for="input-check-java">Java</label>
                                     </div>
                                 </div>

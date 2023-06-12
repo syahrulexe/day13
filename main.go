@@ -74,18 +74,17 @@ func main() {
 }
 
 func home(c echo.Context) error {
-	data, _ := connection.Conn.Query(context.Background(), "SELECT id, name, start_date, end_date,duration, description, technologies, html, css, javascript, java, image FROM tb_projects")
+	data, _ := connection.Conn.Query(context.Background(), "SELECT id, name, start_date, end_date,duration, description, html, css, javascript, java FROM tb_projects")
 
 	var ress []Project
 	for data.Next() {
 		var each = Project{}
 
-		err := data.Scan(&each.Id, &each.ProjectName, &each.StartDate, &each.EndDate, &each.Duration, &each.Description, &each.Technologies, &each.Html, &each.Css, &each.Javascript, &each.Java, &each.Image)
+		err := data.Scan(&each.Id, &each.ProjectName, &each.StartDate, &each.EndDate, &each.Duration, &each.Description, &each.Html, &each.Css, &each.Javascript, &each.Java)
 		if err != nil {
 			fmt.Println(err.Error())
 			return c.JSON(http.StatusInternalServerError, map[string]string{"Message": err.Error()})
 		}
-		// each.Duration = getDuration(each.StartDate, each.EndDate)
 		ress = append(ress, each)
 	}
 
@@ -136,29 +135,22 @@ func detailproject(c echo.Context) error {
 
 	var DetailProject = Project{}
 
-	for i, data := range dataProject {
-		if id == i {
-			DetailProject = Project{
-				ProjectName: data.ProjectName,
-				StartDate:   data.StartDate,
-				EndDate:     data.EndDate,
-				Duration:    data.Duration,
-				Html:        data.Html,
-				Css:         data.Css,
-				Javascript:  data.Javascript,
-				Java:        data.Java,
-				Description: data.Description,
-			}
-		}
+	err := connection.Conn.QueryRow(context.Background(),
+		"SELECT id, name, start_date, end_date,duration, description, technologies, html, css, javascript, java FROM tb_projects WHERE id=$1", id).Scan(
+		&DetailProject.Id, &DetailProject.ProjectName, &DetailProject.StartDate, &DetailProject.EndDate, &DetailProject.Duration, &DetailProject.Description, &DetailProject.Technologies, &DetailProject.Html, &DetailProject.Css, &DetailProject.Javascript, &DetailProject.Java)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]string{"Message": err.Error()})
 	}
 
 	data := map[string]interface{}{
 		"Project": DetailProject,
 	}
 
-	var tmpl, err = template.ParseFiles("views/detailproject.html")
+	var tmpl, errTemplate = template.ParseFiles("views/detailproject.html")
 
-	if err != nil {
+	if errTemplate != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
 
@@ -183,21 +175,12 @@ func addProject(c echo.Context) error {
 	start, _ := time.Parse("2006-01-02", startDate)
 	end, _ := time.Parse("2006-01-02", endDate)
 
-	var newProject = Project{
-		ProjectName: projectName,
-		StartDate:   start,
-		EndDate:     end,
-		Duration:    getDuration(startDate, endDate),
-		Description: description,
-		Html:        htmlValue,
-		Css:         cssValue,
-		Javascript:  javascriptValue,
-		Java:        javaValue,
+	_, err := connection.Conn.Exec(context.Background(), "INSERT INTO tb_projects (name, start_date, end_date, description, duration, html, css, javascript, java) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		projectName, start, end, description, getDuration(startDate, endDate), htmlValue, cssValue, javascriptValue, javaValue)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
-
-	dataProject = append(dataProject, newProject)
-
-	fmt.Println(dataProject)
 
 	return c.Redirect(http.StatusMovedPermanently, "/")
 }
@@ -207,30 +190,15 @@ func editProject(c echo.Context) error {
 
 	var ProjectDetail = Project{}
 
-	for i, data := range dataProject {
-		if id == i {
-			ProjectDetail = Project{
-				Id:          id,
-				ProjectName: data.ProjectName,
-				StartDate:   data.StartDate,
-				EndDate:     data.EndDate,
-				Duration:    data.Duration,
-				Description: data.Description,
-				Html:        data.Html,
-				Css:         data.Css,
-				Javascript:  data.Javascript,
-				Java:        data.Java,
-			}
-		}
-	}
+	err := connection.Conn.QueryRow(context.Background(), "SELECT id, name, start_date, end_date, description, duration, html, css, javascript, java FROM tb_projects WHERE id=$1", id).Scan(
+		&ProjectDetail.Id, &ProjectDetail.ProjectName, &ProjectDetail.StartDate, &ProjectDetail.EndDate, &ProjectDetail.Description, &ProjectDetail.Duration, &ProjectDetail.Html, &ProjectDetail.Css, &ProjectDetail.Javascript, &ProjectDetail.Java)
 
 	data := map[string]interface{}{
 		"Project": ProjectDetail,
 	}
 
-	var tmpl, err = template.ParseFiles("views/edit-project.html")
-
-	if err != nil {
+	var tmpl, errTemplate = template.ParseFiles("views/edit-project.html")
+	if errTemplate != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
 
@@ -240,7 +208,7 @@ func editProject(c echo.Context) error {
 func ressEditProject(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	fmt.Println("Index :", id)
+	fmt.Println("Id :", id)
 
 	projectName := c.FormValue("input-name")
 	startDate := c.FormValue("input-start")
@@ -250,7 +218,7 @@ func ressEditProject(c echo.Context) error {
 	css := c.FormValue("input-check-css")
 	javascript := c.FormValue("input-check-javascript")
 	java := c.FormValue("input-check-java")
-	postingTime := time.Now()
+	// postingTime := time.Now()
 
 	// konversi cekbox string to boolean
 	htmlValue := html != ""
@@ -261,22 +229,14 @@ func ressEditProject(c echo.Context) error {
 	start, _ := time.Parse("2006-01-02", startDate)
 	end, _ := time.Parse("2006-01-02", endDate)
 
-	var ressEditProject = Project{
-		ProjectName: projectName,
-		StartDate:   start,
-		EndDate:     end,
-		Duration:    getDuration(startDate, endDate),
-		Description: description,
-		Html:        htmlValue,
-		Css:         cssValue,
-		Javascript:  javascriptValue,
-		Java:        javaValue,
-		postingTime: time.Now().String(),
+	_, err := connection.Conn.Exec(
+		context.Background(), "UPDATE tb_projects SET name=$1, start_date=$2, end_date=$3, description=$4, duration=$5, html=$6, css=$7, javascript=$8, java=$9 WHERE id=$10",
+		projectName, start, end, description, getDuration(startDate, endDate), htmlValue, cssValue, javascriptValue, javaValue, id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
-
-	fmt.Println(projectName, "Update at :", postingTime)
-
-	dataProject[id] = ressEditProject
+	fmt.Println("edit :", projectName)
 
 	return c.Redirect(http.StatusMovedPermanently, "/")
 }
@@ -284,9 +244,11 @@ func ressEditProject(c echo.Context) error {
 func deleteProject(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	fmt.Println("Index : ", id)
+	_, err := connection.Conn.Exec(context.Background(), "DELETE FROM tb_projects WHERE id=$1", id)
 
-	dataProject = append(dataProject[:id], dataProject[id+1:]...)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+	}
 
 	return c.Redirect(http.StatusMovedPermanently, "/")
 }
@@ -305,28 +267,21 @@ func getDuration(startDate, endDate string) string {
 
 	if durationYears > 1 {
 		duration = strconv.Itoa(durationYears) + " years"
-	} else if durationYears > 0 {
+	} else if durationYears == 1 {
 		duration = strconv.Itoa(durationYears) + " year"
+	} else if durationMonths > 1 {
+		duration = strconv.Itoa(durationMonths) + " months"
+	} else if durationMonths == 1 {
+		duration = strconv.Itoa(durationMonths) + " month"
+	} else if durationWeeks > 1 {
+		duration = strconv.Itoa(durationWeeks) + " weeks"
+	} else if durationWeeks == 1 {
+		duration = strconv.Itoa(durationWeeks) + " week"
+	} else if durationDays > 1 {
+		duration = strconv.Itoa(durationDays) + " days"
 	} else {
-		if durationMonths > 1 {
-			duration = strconv.Itoa(durationMonths) + " months"
-		} else if durationMonths > 0 {
-			duration = strconv.Itoa(durationMonths) + " month"
-		} else {
-			if durationWeeks > 1 {
-				duration = strconv.Itoa(durationWeeks) + " weeks"
-			} else if durationWeeks > 0 {
-				duration = strconv.Itoa(durationWeeks) + " week"
-			} else {
-				if durationDays > 1 {
-					duration = strconv.Itoa(durationDays) + " days"
-				} else {
-					duration = strconv.Itoa(durationDays) + " day"
-				}
-			}
-		}
+		duration = strconv.Itoa(durationDays) + " day"
 	}
 
 	return duration
-
 }

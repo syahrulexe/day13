@@ -18,7 +18,7 @@
         <nav class="navbar navbar-expand-lg bg-light">
           <div class="container">
             <a class="navbar-brand" href="/">
-              <img src="public/assets/images/logo.png" />
+              <img src="/public/assets/images/logo.png" />
             </a>
             <button
               class="navbar-toggler"
@@ -50,7 +50,7 @@
                   >Tesimoni</a>
                 </li>
               </ul>
-              <a href="contact" class="btn bg-black text-white px-2">Contact Me</a>
+              <a href="contact" class="btn btn-warning px-2 border-dark">Contact Me</a>
             </div>
           </div>
         </nav>
@@ -117,8 +117,8 @@
                 {{range $index, $data := .Projects}}
                 <div class="col-lg-4 col-md-4 col-sm-6 mb-3">
                   <div class="card mt-3 shadow p-2 bg-body-tertiary rounded">
-                    <img class="img-fluid w-100 object-fit-cover border rounded" style="height: 200px;" src="public/assets/project images/foto edi.jpg" alt="bmth">
-                    <h4><a class="text-decoration-none" href="detailproject/{{$index}}">{{$data.ProjectName}}</a></h4>
+                    <img class="img-fluid w-100 object-fit-cover border rounded" style="height: 200px;" src="public/assets/project images/foto edi.jpg" alt="">
+                    <h4><a class="text-decoration-none" href="detailproject/{{$data.Id}}">{{$data.ProjectName}}</a></h4>
                     <p class="mt-1">Duration : {{$data.Duration}}</p>
                     <p>{{$data.Description}}</p>
                     <div class="fs-3">
@@ -136,8 +136,8 @@
                       {{end}}
                     </div> 
                     <div class="mt-3 d-flex gap-2 w-100">
-                      <a href="edit-project/{{$index}}" class="w-50" type="submit"><button class="btn btn-dark w-100" >edit</button></a>
-                      <form class="w-50  mb-0"  action="/deleteProject/{{$index}}" method="POST" ><button type="submit" class="btn btn-dark w-100" >delete</button></form>
+                      <a href="edit-project/{{$data.Id}}" class="w-50" type="submit"><button class="btn btn-dark w-100" >edit</button></a>
+                      <form class="w-50  mb-0"  action="/deleteProject/{{$data.Id}}" method="POST" ><button type="submit" class="btn btn-dark w-100" >delete</button></form>
                         
                     </div> 
                   </div>   
